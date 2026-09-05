@@ -1,0 +1,32 @@
+# Config slgplus (template)
+# Docu --> Se réferer au Slab dans le linear.
+server:
+  host: "0.0.0.0"
+  port: 5000
+  debug: true
+  maintenance:
+    maintenance_mode: false
+    reason: ""
+  version: "v2.0.2-SQL"
+
+security:
+  salt: "REDACTED"
+  session_ttl: 86400
+  testers_pin: REDACTED
+
+database:
+  host: "REDACTED"
+  port: REDACTED
+  user: "REDACTED"
+  password: "REDACTED"
+  database: "REDACTED"
+  pool_size: 64 # ~ 400 connexions simultanées.
+  
+apikeys:
+  flarum_master: "REDACTED"
+  cerebras_master: "REDACTED"
+  gemini_keys:
+    - "REDACTED"
+    - "REDACTED"
+    - "REDACTED"
+
