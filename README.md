@@ -1,2 +1,3 @@
-# SLGPlus-Backend
-SLGPlus Backend source code
+SLGPlus's backend.
+Python, SQL.
+No LLMs used.
