@@ -977,7 +977,7 @@ def create_flarum_user(username, email, password, group_id):
     if response.status_code == 201:
         # Assign tag
         user_id = response.json()["data"]["id"]
-        group_url = f"{FLARUM_URL}users/{user_id}/groups"
+        group_url = f"{FLARUM_URL}/{user_id}/groups"
         group_payload = {
             "data": [
                 {
@@ -1029,6 +1029,9 @@ class LoginForum(Resource):
                 groupid = 7
             case '3':
                 groupid = 8
+            case _:
+                print("Classe num does not have associable group",classe_num)
+            
         creation = create_flarum_user(flarum_username, email, password, groupid)
 
         if not creation["success"]:
