@@ -986,7 +986,9 @@ def create_flarum_user(username, email, password, group_id):
                 }
             ]
         }
-        requests.post(group_url, json=group_payload, headers=headers, timeout=10)
+        r = requests.post(group_url, json=group_payload, headers=headers, timeout=10)
+        print(r.status_code)
+        print(r.json())
         return {"success": True, "data": response.json()}
     else:
         return {"success": False, "error": response.text}
@@ -1031,7 +1033,7 @@ class LoginForum(Resource):
                 groupid = 8
             case _:
                 print("Classe num does not have associable group",classe_num)
-            
+        print(classe_num, groupid)
         creation = create_flarum_user(flarum_username, email, password, groupid)
 
         if not creation["success"]:
