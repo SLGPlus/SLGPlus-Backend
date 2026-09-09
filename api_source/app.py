@@ -975,6 +975,7 @@ def create_flarum_user(username, email, password, group_id):
         return {"success": False, "error": str(e)}
 
     if response.status_code == 201:
+        user_id = response.data.id
         # Assign tag
         group_url = f"{FLARUM_URL}/{user_id}"
         group_payload = {
