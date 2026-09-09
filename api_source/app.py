@@ -976,19 +976,31 @@ def create_flarum_user(username, email, password, group_id):
 
     if response.status_code == 201:
         # Assign tag
-        user_id = response.json()["data"]["id"]
-        group_url = f"{FLARUM_URL}/{user_id}/groups"
+        group_url = f"{FLARUM_URL}/{user_id}"
         group_payload = {
-            "data": [
-                {
-                    "type": "groups",
-                    "id": str(group_id)
+            "data": {
+                "type": "users",
+                "id": str(user_id)
+            },
+            "relationships": {
+                "groups": {
+                    "data": [
+                        {
+                            "type": "groups",
+                            "id": str(group_id)
+                        }
+                    ]
                 }
-            ]
+            }
         }
-        r = requests.post(group_url, json=group_payload, headers=headers, timeout=10)
+        r = requests.patch(
+            group_url,
+            json=group_payload,
+            headers=headers,
+            timeout=10
+        )
         print(r.status_code)
-        print(r.json())
+        print(r.text)
         return {"success": True, "data": response.json()}
     else:
         return {"success": False, "error": response.text}
@@ -1031,9 +1043,7 @@ class LoginForum(Resource):
                 groupid = 7
             case '3':
                 groupid = 8
-            case _:
-                print("Classe num does not have associable group",classe_num)
-        print(classe_num, groupid)
+
         creation = create_flarum_user(flarum_username, email, password, groupid)
 
         if not creation["success"]:
