@@ -97,6 +97,7 @@ type TwoFARequest struct {
 	XToken     string `json:"x_token"`
 	TwoFAToken string `json:"twofa_token"`
 	GTK        string `json:"gtk"`
+}
 
 type LoginResponse struct {
 	Success bool        `json:"success"`
@@ -322,7 +323,7 @@ func cors(next http.Handler) http.Handler {
 		origin := r.Header.Get("Origin")
 
 		switch origin {
-		case "https://slgplus.shares.zrok.io":
+		case "https://forum-slgplus.great-site.net":
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 		}
 
