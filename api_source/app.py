@@ -975,31 +975,44 @@ def create_flarum_user(username, email, password, group_id):
         return {"success": False, "error": str(e)}
 
     if response.status_code == 201:
-        user_id = response.data.id
+        user_id = response.json()["data"]["id"]
+        print("ID:",user_id)
         # Assign tag
         group_url = f"{FLARUM_URL}/{user_id}"
+
         group_payload = {
             "data": {
                 "type": "users",
-                "id": str(user_id)
-            },
-            "relationships": {
-                "groups": {
-                    "data": [
-                        {
-                            "type": "groups",
-                            "id": str(group_id)
-                        }
-                    ]
+                "attributes": {
+                    "username": username,
+                    "email": email
+                },
+                "id": str(user_id),
+                "relationships": {
+                    "groups": {
+                        "data": [
+                            {
+                                "type": "groups",
+                                "id": str(group_id)
+                            }
+                        ]
+                    }
                 }
             }
         }
-        r = requests.patch(
+
+        group_headers = {
+            **headers,
+            "X-HTTP-Method-Override": "PATCH"
+        }
+
+        r = requests.post(
             group_url,
             json=group_payload,
-            headers=headers,
+            headers=group_headers,
             timeout=10
         )
+
         print(r.status_code)
         print(r.text)
         return {"success": True, "data": response.json()}
