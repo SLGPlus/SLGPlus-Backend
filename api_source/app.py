@@ -947,7 +947,7 @@ def login_flarum_user(username, password):
         return {"success": False, "error": response.text}
 
 
-def create_flarum_user(username, email, password):
+def create_flarum_user(username, email, password, group_id):
     FLARUM_URL = "http://localhost/flarum-forum/api/users"
     ADMIN_ID = 1
 
@@ -968,12 +968,25 @@ def create_flarum_user(username, email, password):
         }
     }
 
+
     try:
         response = requests.post(FLARUM_URL, json=payload, headers=headers, timeout=10)
     except Exception as e:
         return {"success": False, "error": str(e)}
 
     if response.status_code == 201:
+        # Assign tag
+        user_id = response.json()["data"]["id"]
+        group_url = f"{FLARUM_URL}users/{user_id}/groups"
+        group_payload = {
+            "data": [
+                {
+                    "type": "groups",
+                    "id": str(group_id)
+                }
+            ]
+        }
+        requests.post(group_url, json=group_payload, headers=headers, timeout=10)
         return {"success": True, "data": response.json()}
     else:
         return {"success": False, "error": response.text}
@@ -995,7 +1008,6 @@ class LoginForum(Resource):
         flarum_username = f"{prenom}_{nom}".replace(" ", "")
         password = _derive_flarum_password(email, prenom, sexe, classe)
 
-        # 1. tentative de login direct
         result = login_flarum_user(flarum_username, password)
 
         if result["success"]:
@@ -1004,14 +1016,24 @@ class LoginForum(Resource):
                 "userId": result["data"].get("userId"),
                 "firstTime": False
             }
-
-        # 2. login échoué -> on tente de créer le compte
-        creation = create_flarum_user(flarum_username, email, password)
+        
+        # Determiner groupid (tag classe)
+        classe_num = classe[0] # par exemple "3F" --> "3"
+        groupid = 0
+        match classe_num:
+            case '6':
+                groupid = 5
+            case '5':
+                groupid = 6
+            case '4':
+                groupid = 7
+            case '3':
+                groupid = 8
+        creation = create_flarum_user(flarum_username, email, password, groupid)
 
         if not creation["success"]:
             return {"message": "creation_failed", "error": creation["error"]}, 502
 
-        # 3. relogin après création
         relogin = login_flarum_user(flarum_username, password)
 
         if not relogin["success"]:
@@ -1136,11 +1158,12 @@ def _moderate_and_correct(content):
         "- du contenu sexuel, violent ou choquant\n"
         "- du spam ou de la publicite\n"
         "- des informations personnelles identifiables (adresse, telephone, reseaux sociaux)\n"
+        "- des informations pas adaptés a un public collégien (de la 6ème à la 3ème)\n"
         "- un message ecrit avec TROP d'abreviations/texto au point d'etre difficile a lire\n"
         "- des termes ou memes \"brainrot\"/internet absurdes (quoicoubeh, 67/69 en blague, "
         "skibidi, apagnan, sigma, rizz, etc.)\n"
         "- une insulte cachee formee par les majuscules ou les premieres lettres des mots "
-        "(acrostiche), meme si le message semble innocent une fois lu normalement. "
+        "(acrostiche), meme si le message semble innocent une fois lu normalement, a noter que ED est un acronyme et ne cache pas d'insultes. "
         "Exemple : \"Carre Orange Noir Ou ca Orange Nitrite\" cache le mot \"CONOCON\"/\"CON\" "
         "via ses majuscules. Verifie TOUJOURS les premieres lettres des mots capitalises "
         "de maniere inhabituelle (majuscule au milieu d'une phrase, sans raison grammaticale) "
